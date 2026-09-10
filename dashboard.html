@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Twinfin — Dashboard</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .top-stats{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+    border:1px solid var(--line); border-radius:var(--r-md);
+    background:var(--paper); margin-bottom:32px; overflow:hidden;
+  }
+  .top-stats .cell{ padding:26px 28px; border-right:1px solid var(--line); }
+  .top-stats .cell:last-child{ border-right:none; }
+
+  .grid-2{ display:grid; grid-template-columns:1.6fr 1fr; gap:24px; margin-bottom:24px; }
+  .chart-head{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:28px; }
+  .chart-title{ font-family:var(--font-display); font-size:19px; font-weight:600; margin:4px 0 0; }
+
+  .twin-score-ring{ position:relative; display:flex; justify-content:center; margin:8px 0 26px; }
+  .twin-score-num{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    text-align:center; font-family:var(--font-mono);
+  }
+  .twin-score-num .n{ font-size:34px; font-weight:500; color:var(--green); }
+  .twin-score-num .d{ font-size:13px; color:var(--ink-faint); }
+
+  .bar-row{ margin-bottom:14px; }
+  .bar-row:last-child{ margin-bottom:0; }
+  .bar-row-head{ display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:6px; }
+  .bar-row-head .val{ font-family:var(--font-mono); color:var(--ink-faint); }
+  .bar-track{ height:5px; background:var(--line); border-radius:3px; overflow:hidden; }
+  .bar-fill{ height:100%; background:var(--green); border-radius:3px; }
+
+  .alloc-row{ margin-bottom:18px; }
+  .alloc-row:last-child{ margin-bottom:0; }
+  .alloc-head{ display:flex; justify-content:space-between; margin-bottom:6px; }
+  .alloc-head .label{ font-size:14.5px; }
+  .alloc-head .amt{ font-family:var(--font-mono); font-weight:500; }
+  .alloc-pct{ text-align:right; font-size:12px; color:var(--ink-faint); margin-top:4px; }
+
+  .alloc-total{ margin-top:22px; padding-top:18px; border-top:1px solid var(--line); }
+  .alloc-total .card-label{ margin-bottom:6px; }
+  .alloc-total .stat-value{ font-size:26px; }
+
+  @media (max-width:960px){
+    .top-stats{ grid-template-columns:1fr 1fr; }
+    .top-stats .cell:nth-child(2){ border-right:none; }
+    .grid-2{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="twinfin-topbar"></header>
+<script src="js/nav.js" data-active="dashboard"></script>
+
+<main class="page">
+
+  <div class="top-stats">
+    <div class="cell">
+      <p class="card-label">Monthly Income</p>
+      <div class="stat-value">$4,950</div>
+      <p class="stat-sub">= · Salary + freelance</p>
+    </div>
+    <div class="cell">
+      <p class="card-label">Total Expenses</p>
+      <div class="stat-value">$1,284</div>
+      <p class="stat-sub down">↓ 8% · vs Aug $2,680</p>
+    </div>
+    <div class="cell">
+      <p class="card-label">Net Savings</p>
+      <div class="stat-value">$1,305</div>
+      <p class="stat-sub up">↑ 22% · projected end-month</p>
+    </div>
+    <div class="cell">
+      <p class="card-label">Investments</p>
+      <div class="stat-value">$18,400</div>
+      <p class="stat-sub up">↑ 3.1% · Portfolio value</p>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="chart-head">
+        <div>
+          <p class="card-label" style="margin-bottom:4px;">Cash flow</p>
+          <p class="chart-title">Income vs Expenses · Apr–Sep 2026</p>
+        </div>
+        <div class="chart-legend">
+          <span><span class="dot" style="color:var(--green)"></span>Income</span>
+          <span><span class="dot dashed" style="color:var(--ink-faint)"></span>Expenses</span>
+        </div>
+      </div>
+      <div id="cashflow-chart"></div>
+    </div>
+
+    <div class="card">
+      <p class="card-label">Digital twin score</p>
+      <p class="chart-title" style="margin-bottom:10px;">Overall financial health</p>
+      <div class="twin-score-ring" id="ring-mount"></div>
+      <div id="health-bars"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <p class="card-label" style="margin-bottom:4px;">Spending by category</p>
+      <p class="chart-title" style="margin-bottom:28px;">September 2026 · Actual vs Budget</p>
+      <div id="spend-chart"></div>
+    </div>
+
+    <div class="card">
+      <p class="card-label">Savings allocation</p>
+      <div id="alloc-rows" style="margin-top:20px;"></div>
+      <div class="alloc-total">
+        <p class="card-label">Total saved this month</p>
+        <div class="stat-value" id="alloc-total-val">$1,305.00</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script>
+  document.title = "Twinfin — Dashboard";
+
+  // Cash flow line chart
+  document.getElementById("cashflow-chart").innerHTML = Charts.line({
+    width: 760, height: 260,
+    labels: TWINFIN_DATA.monthLabels,
+    yMax: 6000,
+    series: [
+      { values: TWINFIN_DATA.cashflow.income, color: "#1f3d33" },
+      { values: TWINFIN_DATA.cashflow.expenses, color: "#a9a495", dashed: true },
+    ],
+  });
+
+  // Financial health ring + bars
+  const fh = TWINFIN_DATA.financialHealth;
+  document.getElementById("ring-mount").innerHTML =
+    Charts.ring({ size: 170, thickness: 15, value: fh.score, color: "#1f3d33", track: "#dfd9c9" }) +
+    `<div class="twin-score-num"><div class="n">${fh.score}</div><div class="d">/ 100</div></div>`;
+
+  document.getElementById("health-bars").innerHTML = fh.breakdown
+    .map(
+      (b) => `<div class="bar-row">
+        <div class="bar-row-head"><span>${b.label}</span><span class="val">${b.value}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${b.value}%"></div></div>
+      </div>`
+    )
+    .join("");
+
+  // Spending by category bar chart (actual vs budget)
+  document.getElementById("spend-chart").innerHTML = Charts.bar({
+    width: 760, height: 260,
+    labels: TWINFIN_DATA.spendingByCategory.labels,
+    groups: [
+      { values: TWINFIN_DATA.spendingByCategory.budget, color: "#d8d3c5" },
+      { values: TWINFIN_DATA.spendingByCategory.actual, color: (i) => (i === 0 ? "#1f3d33" : "#bd6a34") },
+    ],
+  });
+
+  // Savings allocation
+  document.getElementById("alloc-rows").innerHTML = TWINFIN_DATA.savingsAllocation
+    .map(
+      (a) => `<div class="alloc-row">
+        <div class="alloc-head"><span class="label">${a.label}</span><span class="amt">$${a.amount}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${a.pct}%"></div></div>
+        <div class="alloc-pct">${a.pct}%</div>
+      </div>`
+    )
+    .join("");
+</script>
+</body>
+</html>

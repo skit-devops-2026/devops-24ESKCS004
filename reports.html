@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Twinfin — Reports</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .range-tabs{ display:flex; gap:6px; }
+  .range-tab{
+    padding:9px 18px; border-radius:5px; font-size:13.5px; border:1px solid var(--line-strong);
+    background:var(--paper); color:var(--ink-soft);
+  }
+  .range-tab.active{ background:var(--green); border-color:var(--green); color:var(--paper); font-weight:500; }
+
+  .grid-2{ display:grid; grid-template-columns:1.5fr 1fr; gap:24px; margin-bottom:24px; }
+  .big-num{ font-family:var(--font-mono); font-size:38px; font-weight:500; letter-spacing:-0.01em; }
+  .big-sub{ font-size:13.5px; color:var(--ink-faint); margin:8px 0 24px; }
+
+  .donut-wrap{ display:flex; align-items:center; gap:28px; }
+
+  .insights-strip{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:0;
+    background:var(--green-soft); border:1px solid #cfdcd2; border-radius:var(--r-md); overflow:hidden;
+  }
+  .insight-cell{ padding:26px 28px; border-right:1px solid #cfdcd2; }
+  .insight-cell:last-child{ border-right:none; }
+  .insight-tag{
+    display:inline-block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.06em;
+    padding:3px 9px; border-radius:4px; background:var(--paper); color:var(--ink-soft); margin-bottom:14px;
+  }
+  .insight-title{ font-weight:600; font-size:15.5px; margin:0 0 8px; }
+  .insight-body{ font-size:13.5px; color:var(--ink-soft); line-height:1.6; margin:0; }
+
+  .insights-head{ padding:22px 28px 0; font-family:var(--font-mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-faint); }
+
+  @media (max-width:960px){
+    .grid-2{ grid-template-columns:1fr; }
+    .insights-strip{ grid-template-columns:1fr; }
+    .insight-cell{ border-right:none; border-bottom:1px solid #cfdcd2; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="twinfin-topbar"></header>
+<script src="js/nav.js" data-active="reports"></script>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Analytics</span>
+      <h1 class="page-title">Reports</h1>
+    </div>
+    <div class="range-tabs">
+      <button class="range-tab">3M</button>
+      <button class="range-tab active">6M</button>
+      <button class="range-tab">YTD</button>
+      <button class="range-tab">1Y</button>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <p class="card-label">Net worth</p>
+      <div class="big-num">$42,180</div>
+      <p class="big-sub up">↑ $7,980 since Jan 2026 · +23.3%</p>
+      <div id="networth-chart"></div>
+    </div>
+    <div class="card">
+      <p class="card-label">Savings rate</p>
+      <div class="big-num">26.4%</div>
+      <p class="big-sub up">↑ 3.2 pts from last month</p>
+      <div id="savingsrate-chart"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <p class="card-label">Monthly spending</p>
+      <p class="chart-title" style="font-family:var(--font-display); font-size:19px; font-weight:600; margin:2px 0 24px;">Apr – Sep 2026</p>
+      <div id="monthly-spend-chart"></div>
+    </div>
+    <div class="card">
+      <p class="card-label">Sep breakdown</p>
+      <p class="chart-title" style="font-family:var(--font-display); font-size:19px; font-weight:600; margin:2px 0 20px;">By category</p>
+      <div class="donut-wrap">
+        <div id="donut-mount"></div>
+        <ul class="legend-list" id="legend-mount" style="flex:1;"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;">
+    <p class="insights-head">Twin insights · September 2026</p>
+    <div class="insights-strip" style="border:none; margin-top:18px;" id="insights"></div>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script>
+  document.title = "Twinfin — Reports";
+
+  document.getElementById("networth-chart").innerHTML = Charts.line({
+    width: 620, height: 240,
+    labels: TWINFIN_DATA.netWorth.labels,
+    yMin: 30000, yMax: 46000,
+    series: [{ values: TWINFIN_DATA.netWorth.values, color: "#1f3d33", dots: true }],
+  });
+
+  document.getElementById("savingsrate-chart").innerHTML = Charts.bar({
+    width: 460, height: 240,
+    labels: TWINFIN_DATA.monthLabels,
+    yMax: 32,
+    groups: [
+      {
+        values: TWINFIN_DATA.savingsRateHistory,
+        color: (i, v) => (i === TWINFIN_DATA.savingsRateHistory.length - 1 ? "#1f3d33" : "#d6dfd9"),
+      },
+    ],
+  });
+
+  document.getElementById("monthly-spend-chart").innerHTML = Charts.bar({
+    width: 620, height: 260,
+    labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep"],
+    yMax: 3600,
+    groups: [
+      {
+        values: [3050, 3200, 2850, 3300, 2700, 1284],
+        color: (i, v) => (i === 5 ? "#bd6a34" : "#d8d3c5"),
+      },
+    ],
+  });
+
+  const seg = TWINFIN_DATA.septemberBreakdown;
+  document.getElementById("donut-mount").innerHTML = Charts.donut({
+    size: 170, thickness: 30,
+    segments: seg.map((s) => ({ pct: s.pct, color: s.color })),
+  });
+  document.getElementById("legend-mount").innerHTML = seg
+    .map(
+      (s) => `<li>
+        <span class="k"><span class="swatch" style="background:${s.color}"></span>${s.label}</span>
+        <span class="v"><span class="pct">${s.pct}%</span><span>$${s.amount}</span></span>
+      </li>`
+    )
+    .join("");
+
+  document.getElementById("insights").innerHTML = TWINFIN_DATA.insights
+    .map(
+      (i) => `<div class="insight-cell">
+        <span class="insight-tag">${i.tag}</span>
+        <p class="insight-title">${i.title}</p>
+        <p class="insight-body">${i.body}</p>
+      </div>`
+    )
+    .join("");
+</script>
+</body>
+</html>

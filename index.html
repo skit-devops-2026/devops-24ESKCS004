@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Twinfin — Home</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .hero{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:40px; margin-bottom:56px; flex-wrap:wrap;
+  }
+  .hero-text{ max-width:640px; }
+  .hero-date{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--ink-faint); margin-bottom:14px; display:block;
+  }
+  .hero-title{
+    font-family:var(--font-display); font-size:56px; line-height:1.03;
+    margin:0 0 20px; font-weight:500; letter-spacing:-0.01em;
+  }
+  .hero-title em{ font-style:italic; font-weight:500; }
+  .hero-sub{ font-size:17px; color:var(--ink-soft); line-height:1.6; margin:0; max-width:520px; }
+
+  .summary-card{ width:100%; max-width:400px; }
+  .summary-row{ padding:18px 0; border-bottom:1px solid var(--line); }
+  .summary-row:first-child{ padding-top:0; }
+  .summary-row:last-child{ border-bottom:none; padding-bottom:0; }
+  .summary-row .card-label{ margin-bottom:8px; }
+  .summary-row .stat-value{ font-size:26px; }
+
+  .lower-grid{
+    display:grid;
+    grid-template-columns:400px 1fr;
+    gap:32px;
+    padding-top:32px;
+    border-top:1px solid var(--line);
+  }
+
+  .quick-actions{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .qa-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--r-md);
+    padding:22px; transition:border-color .15s ease;
+  }
+  .qa-card:hover{ border-color:var(--ink-faint); }
+  .qa-icon{ font-size:19px; margin-bottom:26px; color:var(--ink); }
+  .qa-label{ font-size:14.5px; font-weight:500; }
+
+  .health-card{
+    grid-column:1 / -1;
+    background:var(--green-soft); border:1px solid #cfdcd2; border-radius:var(--r-md);
+    padding:22px;
+  }
+  .health-score{ font-family:var(--font-mono); font-size:34px; color:var(--green); font-weight:500; }
+  .health-score span{ font-size:16px; color:var(--ink-faint); font-weight:400; }
+  .health-note{ margin-top:6px; }
+  .health-note a{ color:var(--green); font-weight:500; }
+
+  .activity-list .item{
+    display:flex; align-items:center; gap:16px; padding:18px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .activity-list .item:last-child{ border-bottom:none; }
+  .item-desc{ font-weight:500; flex:1; }
+  .item-date{ color:var(--ink-faint); font-size:13.5px; width:70px; }
+  .item-amount{ font-family:var(--font-mono); font-weight:500; width:110px; text-align:right; }
+
+  .bottom-stats{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:24px;
+    margin-top:32px;
+  }
+
+  @media (max-width:960px){
+    .hero{ flex-direction:column; }
+    .lower-grid{ grid-template-columns:1fr; }
+    .bottom-stats{ grid-template-columns:1fr; }
+    .hero-title{ font-size:40px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="twinfin-topbar"></header>
+<script src="js/nav.js" data-active="home"></script>
+
+<main class="page">
+
+  <section class="hero">
+    <div class="hero-text">
+      <span class="hero-date" id="today-date">Saturday, September 5, 2026</span>
+      <h1 class="hero-title">Good morning,<br><em id="greet-name">Amara</em>.</h1>
+      <p class="hero-sub" id="hero-summary">
+        Your financial twin is up to date. September looks on track — you're 12% ahead of your savings target.
+      </p>
+    </div>
+
+    <div class="card summary-card">
+      <div class="summary-row">
+        <p class="card-label">September 2026</p>
+      </div>
+      <div class="summary-row">
+        <p class="card-label">Net Income</p>
+        <div class="stat-value" id="s-income">$4,950.00</div>
+      </div>
+      <div class="summary-row">
+        <p class="card-label">Spent so far</p>
+        <div class="stat-value" id="s-spent">$1,284.37</div>
+      </div>
+      <div class="summary-row">
+        <p class="card-label">Available</p>
+        <div class="stat-value" id="s-available">$3,665.63</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="lower-grid">
+    <div>
+      <p class="eyebrow" style="margin-bottom:16px;">Quick actions</p>
+      <div class="quick-actions">
+        <div class="qa-card"><div class="qa-icon">+</div><div class="qa-label">Log Expense</div></div>
+        <div class="qa-card"><div class="qa-icon">→</div><div class="qa-label">Transfer Funds</div></div>
+        <div class="qa-card"><div class="qa-icon">◎</div><div class="qa-label">Set Goal</div></div>
+        <div class="qa-card"><div class="qa-icon">✓</div><div class="qa-label">Pay Bill</div></div>
+        <a href="reports.html" class="health-card" style="text-decoration:none; color:inherit;">
+          <p class="card-label" style="color:var(--green);">Financial health</p>
+          <div class="health-score" id="health-score">78<span> / 100</span></div>
+          <p class="stat-sub health-note">Good — see full breakdown →</p>
+        </a>
+      </div>
+    </div>
+
+    <div>
+      <p class="eyebrow" style="margin-bottom:16px;">Recent activity</p>
+      <div class="card activity-list" id="activity-list"></div>
+    </div>
+  </div>
+
+  <div class="bottom-stats">
+    <div class="card">
+      <p class="card-label">Upcoming bills</p>
+      <div class="stat-value">$643.00</div>
+      <p class="stat-sub">Next 7 days · 4 payments</p>
+    </div>
+    <div class="card">
+      <p class="card-label">Savings rate</p>
+      <div class="stat-value">26.4%</div>
+      <p class="stat-sub up">↑ 3.2% from last month</p>
+    </div>
+    <div class="card">
+      <p class="card-label">Net worth</p>
+      <div class="stat-value">$42,180</div>
+      <p class="stat-sub up">↑ $1,240 this month</p>
+    </div>
+  </div>
+
+</main>
+
+<script src="js/data.js"></script>
+<script>
+  document.getElementById("greet-name").innerHTML = TWINFIN_DATA.user.first + ".";
+  document.title = "Twinfin — Home";
+
+  const list = document.getElementById("activity-list");
+  list.innerHTML = TWINFIN_DATA.recentActivity
+    .map((a) => {
+      const chipClass = a.category.toLowerCase();
+      const amt = fmtMoney(a.amount, { forcePlus: true });
+      const cls = a.amount >= 0 ? "up" : "";
+      return `<div class="item">
+        <span class="chip ${chipClass}">${a.category}</span>
+        <span class="item-desc">${a.desc}</span>
+        <span class="item-date">${a.date}</span>
+        <span class="item-amount ${cls}">${amt}</span>
+      </div>`;
+    })
+    .join("");
+</script>
+</body>
+</html>

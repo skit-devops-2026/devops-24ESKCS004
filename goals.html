@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Twinfin — Goals</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .summary-strip{
+    display:grid; grid-template-columns:repeat(3,1fr);
+    border:1px solid var(--line); border-radius:var(--r-md);
+    background:var(--paper); margin-bottom:32px; overflow:hidden;
+  }
+  .summary-strip .cell{ padding:26px 28px; border-right:1px solid var(--line); }
+  .summary-strip .cell:last-child{ border-right:none; }
+
+  .goals-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .goal-card{ display:flex; flex-direction:column; }
+  .goal-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+  .goal-pct{ text-align:right; }
+  .goal-pct .n{ font-family:var(--font-mono); font-size:22px; font-weight:500; }
+  .goal-pct .l{ font-size:12px; color:var(--ink-faint); }
+  .goal-title{ font-family:var(--font-display); font-size:22px; font-weight:600; margin:2px 0 16px; }
+  .goal-track{ height:6px; background:var(--line); border-radius:3px; overflow:hidden; margin-bottom:14px; }
+  .goal-fill{ height:100%; border-radius:3px; }
+  .goal-fill.green{ background:var(--green); }
+  .goal-fill.clay{ background:var(--clay); }
+  .goal-amounts{ display:flex; justify-content:space-between; font-size:14.5px; margin-bottom:4px; }
+  .goal-amounts .amt strong{ font-weight:600; }
+  .goal-remaining{ font-size:13px; color:var(--ink-faint); }
+  .goal-target{ text-align:right; font-size:13px; color:var(--ink-faint); }
+  .goal-target .d{ display:block; color:var(--ink); font-family:var(--font-mono); margin-top:2px; }
+  .goal-foot{
+    margin-top:18px; padding-top:16px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center; font-size:13.5px;
+  }
+  .goal-foot .edit{ color:var(--green); font-weight:500; }
+
+  @media (max-width:960px){
+    .summary-strip{ grid-template-columns:1fr; }
+    .summary-strip .cell{ border-right:none; border-bottom:1px solid var(--line); }
+    .goals-grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="twinfin-topbar"></header>
+<script src="js/nav.js" data-active="goals"></script>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Savings goals</span>
+      <h1 class="page-title">Your Goals</h1>
+    </div>
+    <button class="btn btn-primary">+ New Goal</button>
+  </div>
+
+  <div class="summary-strip" id="summary-strip"></div>
+
+  <div class="goals-grid" id="goals-grid"></div>
+</main>
+
+<script src="js/data.js"></script>
+<script>
+  document.title = "Twinfin — Goals";
+  const goals = TWINFIN_DATA.goals;
+
+  const totalSaved = goals.reduce((a, g) => a + g.saved, 0);
+  const totalTarget = goals.reduce((a, g) => a + g.target, 0);
+  const totalMonthly = goals.reduce((a, g) => a + g.monthly, 0);
+  const pctOverall = Math.round((totalSaved / totalTarget) * 100);
+  const income = 4950;
+
+  document.getElementById("summary-strip").innerHTML = `
+    <div class="cell">
+      <p class="card-label">Total saved</p>
+      <div class="stat-value">$${totalSaved.toLocaleString()}</div>
+      <p class="stat-sub">across ${goals.length} goals</p>
+    </div>
+    <div class="cell">
+      <p class="card-label">Total target</p>
+      <div class="stat-value">$${totalTarget.toLocaleString()}</div>
+      <p class="stat-sub">${pctOverall}% overall progress</p>
+    </div>
+    <div class="cell">
+      <p class="card-label">Monthly committed</p>
+      <div class="stat-value">$${totalMonthly.toLocaleString()}</div>
+      <p class="stat-sub">${((totalMonthly / income) * 100).toFixed(1)}% of monthly income</p>
+    </div>
+  `;
+
+  document.getElementById("goals-grid").innerHTML = goals
+    .map((g) => {
+      const pct = Math.round((g.saved / g.target) * 100);
+      const remaining = g.target - g.saved;
+      return `<div class="card goal-card">
+        <div class="goal-head">
+          <p class="card-label mt-0">${g.category}</p>
+          <div class="goal-pct"><div class="n">${pct}%</div><div class="l">complete</div></div>
+        </div>
+        <h2 class="goal-title">${g.title}</h2>
+        <div class="goal-track"><div class="goal-fill ${g.color}" style="width:${pct}%"></div></div>
+        <div class="goal-amounts">
+          <span class="amt"><strong>$${g.saved.toLocaleString()}</strong> of $${g.target.toLocaleString()}</span>
+          <span class="goal-target">Target<span class="d">${g.due}</span></span>
+        </div>
+        <p class="goal-remaining">$${remaining.toLocaleString()} remaining · $${g.monthly}/mo</p>
+        <div class="goal-foot">
+          <span class="text-faint">~${g.months} months to reach goal at current rate</span>
+          <a href="#" class="edit">Edit →</a>
+        </div>
+      </div>`;
+    })
+    .join("");
+</script>
+</body>
+</html>

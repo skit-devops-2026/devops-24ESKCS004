@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Twinfin — Transactions</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .top-stats{
+    display:grid; grid-template-columns:repeat(4,1fr);
+    border:1px solid var(--line); border-radius:var(--r-md);
+    background:var(--paper); margin-bottom:28px; overflow:hidden;
+  }
+  .top-stats .cell{ padding:24px 26px; border-right:1px solid var(--line); }
+  .top-stats .cell:last-child{ border-right:none; }
+
+  .controls{ display:flex; gap:14px; margin-bottom:18px; }
+  .search-input{
+    flex:1; padding:13px 16px; border:1px solid var(--line-strong); border-radius:var(--r-sm);
+    background:var(--paper); font-size:14.5px;
+  }
+  .sort-select{
+    padding:13px 16px; border:1px solid var(--line-strong); border-radius:var(--r-sm);
+    background:var(--paper); font-size:14.5px; min-width:150px;
+  }
+
+  .filters{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
+  .filter-chip{
+    padding:9px 16px; border-radius:5px; font-size:13.5px; border:1px solid var(--line-strong);
+    background:var(--paper); color:var(--ink-soft);
+  }
+  .filter-chip.active{ background:var(--green); border-color:var(--green); color:var(--paper); font-weight:500; }
+
+  table{ width:100%; border-collapse:collapse; }
+  thead th{
+    text-align:left; font-family:var(--font-mono); font-size:11px; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:400;
+    padding:14px 20px; background:var(--cream-deep); border-bottom:1px solid var(--line);
+  }
+  thead th:last-child{ text-align:right; }
+  tbody td{ padding:18px 20px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tbody tr:nth-child(even){ background:rgba(0,0,0,0.012); }
+  tbody tr:hover{ background:var(--cream-deep); }
+  .t-desc{ font-weight:600; font-size:15px; }
+  .t-date{ font-size:13px; color:var(--ink-faint); margin-top:3px; }
+  .t-amount{ text-align:right; font-family:var(--font-mono); font-weight:600; white-space:nowrap; }
+  .t-amount.pos{ color:var(--green); }
+  .table-wrap{ border:1px solid var(--line); border-radius:var(--r-md); overflow:hidden; background:var(--paper); }
+  .empty-state{ padding:60px 20px; text-align:center; color:var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="twinfin-topbar"></header>
+<script src="js/nav.js" data-active="transactions"></script>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Ledger</span>
+      <h1 class="page-title">Transactions</h1>
+    </div>
+    <button class="btn" id="export-btn">↓ Export CSV</button>
+  </div>
+
+  <div class="top-stats" id="top-stats"></div>
+
+  <div class="controls">
+    <input class="search-input" id="search" type="text" placeholder="Search transactions..." />
+    <select class="sort-select" id="sort-select">
+      <option value="date">Sort: Date</option>
+      <option value="amount">Sort: Amount</option>
+      <option value="desc">Sort: Description</option>
+    </select>
+  </div>
+
+  <div class="filters" id="filters"></div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Description</th><th>Merchant</th><th>Category</th><th>Account</th><th>Amount</th></tr>
+      </thead>
+      <tbody id="tx-body"></tbody>
+    </table>
+    <div class="empty-state" id="empty-state" style="display:none;">No transactions match your search.</div>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script>
+  document.title = "Twinfin — Transactions";
+
+  let all = TWINFIN_DATA.transactions.slice();
+  let activeCategory = "All";
+  let sortBy = "date";
+  let query = "";
+
+  const categories = ["All", "Income", "Food", "Housing", "Transport", "Utilities", "Health", "Entertainment", "Shopping", "Transfer"];
+
+  document.getElementById("filters").innerHTML = categories
+    .map((c) => `<button class="filter-chip ${c === "All" ? "active" : ""}" data-cat="${c}">${c}</button>`)
+    .join("");
+
+  function renderStats(list) {
+    const totalIn = list.filter((t) => t.amount > 0).reduce((a, t) => a + t.amount, 0);
+    const totalOut = list.filter((t) => t.amount < 0).reduce((a, t) => a + t.amount, 0);
+    const net = totalIn + totalOut;
+    document.getElementById("top-stats").innerHTML = `
+      <div class="cell">
+        <p class="card-label">Transactions</p>
+        <div class="stat-value">${list.length}</div>
+        <p class="stat-sub">in view</p>
+      </div>
+      <div class="cell">
+        <p class="card-label">Total in</p>
+        <div class="stat-value up">+$${totalIn.toFixed(2)}</div>
+        <p class="stat-sub">credits</p>
+      </div>
+      <div class="cell">
+        <p class="card-label">Total out</p>
+        <div class="stat-value down">-$${Math.abs(totalOut).toFixed(2)}</div>
+        <p class="stat-sub">debits</p>
+      </div>
+      <div class="cell">
+        <p class="card-label">Net</p>
+        <div class="stat-value ${net >= 0 ? "up" : "down"}">${net >= 0 ? "+" : "-"}$${Math.abs(net).toFixed(2)}</div>
+        <p class="stat-sub">net change</p>
+      </div>
+    `;
+  }
+
+  function render() {
+    let list = all.filter((t) => activeCategory === "All" || t.category === activeCategory);
+    if (query.trim()) {
+      const q = query.trim().toLowerCase();
+      list = list.filter(
+        (t) => t.desc.toLowerCase().includes(q) || t.merchant.toLowerCase().includes(q) || t.category.toLowerCase().includes(q)
+      );
+    }
+    list = list.slice().sort((a, b) => {
+      if (sortBy === "amount") return b.amount - a.amount;
+      if (sortBy === "desc") return a.desc.localeCompare(b.desc);
+      return new Date(b.date) - new Date(a.date);
+    });
+
+    renderStats(list);
+
+    const body = document.getElementById("tx-body");
+    const empty = document.getElementById("empty-state");
+    if (list.length === 0) {
+      body.innerHTML = "";
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+
+    body.innerHTML = list
+      .map(
+        (t) => `<tr>
+          <td><div class="t-desc">${t.desc}</div><div class="t-date">${t.date}</div></td>
+          <td>${t.merchant}</td>
+          <td><span class="chip ${t.category.toLowerCase()}">${t.category}</span></td>
+          <td>${t.account}</td>
+          <td class="t-amount ${t.amount > 0 ? "pos" : ""}">${fmtMoney(t.amount, { forcePlus: true })}</td>
+        </tr>`
+      )
+      .join("");
+  }
+
+  document.querySelectorAll(".filter-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      activeCategory = btn.dataset.cat;
+      document.querySelectorAll(".filter-chip").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      render();
+    });
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    query = e.target.value;
+    render();
+  });
+
+  document.getElementById("sort-select").addEventListener("change", (e) => {
+    sortBy = e.target.value;
+    render();
+  });
+
+  document.getElementById("export-btn").addEventListener("click", () => {
+    const rows = [["Description", "Date", "Merchant", "Category", "Account", "Amount"]];
+    all.forEach((t) => rows.push([t.desc, t.date, t.merchant, t.category, t.account, t.amount]));
+    const csv = rows.map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "twinfin-transactions.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  render();
+</script>
+</body>
+</html>

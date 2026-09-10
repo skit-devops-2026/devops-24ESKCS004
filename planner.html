@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Twinfin — Planner</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .planner-layout{ display:grid; grid-template-columns:1fr 340px; gap:32px; }
+
+  .month-tabs{ display:flex; gap:8px; margin-bottom:8px; }
+  .month-tab{
+    padding:9px 18px; border-radius:5px; font-size:14px; border:1px solid var(--line-strong);
+    background:var(--paper); color:var(--ink-soft);
+  }
+  .month-tab.active{ background:var(--green); border-color:var(--green); color:var(--paper); font-weight:500; }
+
+  .flow-totals{ text-align:right; font-family:var(--font-mono); font-size:14px; color:var(--ink-soft); margin-bottom:20px; }
+  .flow-totals .neg{ color:var(--clay); }
+  .flow-totals .pos{ color:var(--green); }
+
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline::before{
+    content:''; position:absolute; left:5px; top:14px; bottom:14px; width:1px; background:var(--line-strong);
+  }
+  .tl-item{ position:relative; margin-bottom:16px; }
+  .tl-dot{
+    position:absolute; left:-28px; top:24px; width:10px; height:10px; border-radius:50%;
+    background:var(--paper); border:2px solid var(--ink-faint);
+  }
+  .tl-dot.Bill{ border-color:var(--clay); }
+  .tl-dot.Income{ border-color:var(--green); }
+  .tl-dot.Transfer{ border-color:#3f6b5a; }
+
+  .event-card{ background:var(--paper); border:1px solid var(--line); border-radius:var(--r-md); padding:20px 22px; }
+  .event-top{ display:flex; align-items:center; gap:12px; }
+  .event-title{ font-weight:600; font-size:15.5px; }
+  .event-recur{ color:var(--ink-faint); font-size:13px; margin-left:2px; }
+  .event-amount{ margin-left:auto; font-family:var(--font-mono); font-weight:600; }
+  .event-amount.pos{ color:var(--green); }
+  .event-date{ color:var(--ink-faint); font-size:13.5px; width:60px; text-align:right; }
+  .event-note{ font-size:13.5px; color:var(--ink-faint); margin-top:8px; }
+  .event-row-flex{ display:flex; align-items:center; gap:12px; width:100%; }
+
+  .side-card{ margin-bottom:24px; }
+  .type-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; font-size:14.5px; }
+  .type-dot{ width:8px; height:8px; border-radius:50%; margin-right:10px; display:inline-block; }
+  .type-count{ font-family:var(--font-mono); color:var(--ink-faint); }
+
+  .proj-row{ display:flex; justify-content:space-between; padding:10px 0; font-size:14.5px; }
+  .proj-row.total{ border-top:1px solid var(--line); margin-top:6px; padding-top:16px; font-weight:600; }
+  .proj-row .v{ font-family:var(--font-mono); }
+  .proj-row .v.pos{ color:var(--green); }
+  .proj-row .v.neg{ color:var(--clay); }
+
+  .reminder-title{ font-weight:600; margin:2px 0 6px; }
+
+  @media (max-width:960px){ .planner-layout{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="twinfin-topbar"></header>
+<script src="js/nav.js" data-active="planner"></script>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Financial calendar</span>
+      <h1 class="page-title">Event Planner</h1>
+    </div>
+    <button class="btn btn-primary">+ Add Event</button>
+  </div>
+
+  <div class="month-tabs">
+    <button class="month-tab active">Sep 2026</button>
+    <button class="month-tab">Oct 2026</button>
+    <button class="month-tab">Nov 2026</button>
+  </div>
+
+  <div class="planner-layout">
+    <div>
+      <div class="flow-totals" id="flow-totals"></div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+
+    <aside>
+      <div class="card side-card">
+        <p class="card-label">By type</p>
+        <div id="by-type"></div>
+      </div>
+      <div class="card side-card">
+        <p class="card-label">Net projection</p>
+        <div id="net-projection"></div>
+      </div>
+      <div class="card side-card">
+        <p class="card-label">Upcoming reminder</p>
+        <div id="upcoming-reminder"></div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script>
+  document.title = "Twinfin — Planner";
+  const events = TWINFIN_DATA.plannerEvents;
+
+  const income = events.filter((e) => e.amount > 0).reduce((a, e) => a + e.amount, 0);
+  const outflow = events.filter((e) => e.amount < 0).reduce((a, e) => a + e.amount, 0);
+
+  document.getElementById("flow-totals").innerHTML =
+    `<span class="pos">+${fmtMoney(income, { decimals: false })}.00 expected</span>` +
+    `  ·  <span class="neg">-${fmtMoney(Math.abs(outflow), { decimals: false })}.00 planned</span>`;
+
+  document.getElementById("timeline").innerHTML = events
+    .map((e) => {
+      const hasAmount = e.amount !== null;
+      const amtClass = hasAmount && e.amount > 0 ? "pos" : "";
+      const amtStr = hasAmount ? fmtMoney(e.amount, { forcePlus: true }) : "";
+      return `<div class="tl-item">
+        <span class="tl-dot ${e.type}"></span>
+        <div class="event-card">
+          <div class="event-row-flex">
+            <span class="chip ${e.type.toLowerCase()}">${e.type}</span>
+            <span class="event-title">${e.title}</span>
+            ${e.tag ? `<span class="event-recur">↻ ${e.tag}</span>` : ""}
+            ${hasAmount ? `<span class="event-amount ${amtClass}">${amtStr}</span>` : ""}
+            <span class="event-date" ${!hasAmount ? 'style="margin-left:auto;"' : ""}>${e.date}</span>
+          </div>
+          ${e.note ? `<p class="event-note">${e.note}</p>` : ""}
+        </div>
+      </div>`;
+    })
+    .join("");
+
+  const typeCounts = {};
+  events.forEach((e) => (typeCounts[e.type] = (typeCounts[e.type] || 0) + 1));
+  const typeColors = { Bill: "#bd6a34", Income: "#1c1c1a", Purchase: "#8c8a80", Reminder: "#c9c5b8", Transfer: "#1f3d33" };
+  document.getElementById("by-type").innerHTML = Object.entries(typeCounts)
+    .map(
+      ([type, count]) =>
+        `<div class="type-row"><span><span class="type-dot" style="background:${typeColors[type]}"></span>${type}</span><span class="type-count">${count}</span></div>`
+    )
+    .join("");
+
+  const net = income + outflow;
+  document.getElementById("net-projection").innerHTML = `
+    <div class="proj-row"><span>Expected in</span><span class="v pos">+$${income.toFixed(2)}</span></div>
+    <div class="proj-row"><span>Planned out</span><span class="v neg">-$${Math.abs(outflow).toFixed(2)}</span></div>
+    <div class="proj-row total"><span>Net</span><span class="v pos">+$${net.toFixed(2)}</span></div>
+  `;
+
+  const reminder = events.find((e) => e.type === "Reminder");
+  document.getElementById("upcoming-reminder").innerHTML = `
+    <p class="reminder-title">${reminder.title}</p>
+    <p class="text-faint" style="font-size:13.5px;">${reminder.date} · ${reminder.note}</p>
+  `;
+</script>
+</body>
+</html>

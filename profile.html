@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Twinfin — Profile</title>
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .profile-head{ display:flex; align-items:center; gap:20px; margin-bottom:36px; }
+  .profile-avatar{
+    width:64px; height:64px; border-radius:50%; background:var(--green-deep); color:var(--paper);
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:20px; flex:none;
+  }
+  .profile-name{ font-family:var(--font-display); font-size:30px; font-weight:600; margin:0; }
+  .profile-meta{ color:var(--ink-faint); font-size:14px; margin-top:4px; }
+
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  .account-row{
+    display:flex; justify-content:space-between; align-items:center;
+    border:1px solid var(--line); border-radius:var(--r-sm); padding:18px 20px; margin-bottom:14px;
+    background:var(--paper);
+  }
+  .account-name{ font-weight:600; font-size:15px; }
+  .account-sub{ font-size:13px; color:var(--ink-faint); margin-top:3px; }
+  .account-bal{ text-align:right; font-family:var(--font-mono); font-weight:600; }
+  .account-unlink{ display:block; text-align:right; font-size:12.5px; color:var(--clay); margin-top:4px; }
+
+  .session-row{ padding:16px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
+  .session-row:last-child{ border-bottom:none; }
+  .session-device{ font-weight:600; font-size:15px; }
+  .session-loc{ font-size:13px; color:var(--ink-faint); margin-top:3px; }
+  .session-revoke{ color:var(--clay); font-size:13.5px; font-weight:500; }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="twinfin-topbar"></header>
+<script src="js/nav.js" data-active="profile"></script>
+
+<main class="page">
+  <div class="profile-head">
+    <div class="profile-avatar" id="p-avatar">AK</div>
+    <div>
+      <span class="eyebrow" style="margin-bottom:2px;">Profile</span>
+      <h1 class="profile-name" id="p-name">Amara Kowalski</h1>
+      <p class="profile-meta" id="p-meta">amara.kowalski@email.com · Member since Jan 2024</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="personal">Personal Info</button>
+    <button class="tab" data-tab="financial">Financial Settings</button>
+    <button class="tab" data-tab="preferences">Preferences</button>
+    <button class="tab" data-tab="security">Security</button>
+  </div>
+
+  <!-- Personal Info -->
+  <section class="tab-panel active" id="panel-personal">
+    <div class="two-col">
+      <div>
+        <h2 class="section-title">Account Details</h2>
+        <div class="field"><label>Full Name</label><input type="text" id="f-name" /></div>
+        <div class="field"><label>Email Address</label><input type="email" id="f-email" /></div>
+        <div class="field"><label>Phone Number</label><input type="text" id="f-phone" /></div>
+        <div class="field"><label>Date of Birth</label><input type="date" id="f-dob" /></div>
+        <div class="field"><label>Occupation</label><input type="text" id="f-occupation" /></div>
+      </div>
+      <div>
+        <h2 class="section-title">Location</h2>
+        <div class="field"><label>City</label><input type="text" id="f-city" /></div>
+        <div class="field"><label>State / Region</label><input type="text" id="f-state" /></div>
+        <div class="field"><label>Country</label><input type="text" id="f-country" /></div>
+        <div class="field"><label>Timezone</label><input type="text" id="f-timezone" /></div>
+        <button class="btn btn-primary" id="save-personal">Save Changes</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Financial Settings -->
+  <section class="tab-panel" id="panel-financial">
+    <div class="two-col">
+      <div>
+        <h2 class="section-title">Income &amp; Budget</h2>
+        <div class="field"><label>Monthly Net Income</label><input type="text" value="$4,950" /></div>
+        <div class="field"><label>Monthly Budget Limit</label><input type="text" value="$3,200" /></div>
+        <div class="field"><label>Savings Target (%)</label><input type="text" value="26" /></div>
+        <div class="field"><label>Primary Currency</label><input type="text" value="USD — US Dollar" /></div>
+        <div class="field">
+          <label>Pay Cycle</label>
+          <select>
+            <option>Bi-weekly</option>
+            <option>Weekly</option>
+            <option>Monthly</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <h2 class="section-title">Linked Accounts</h2>
+        <div id="accounts-list"></div>
+        <button class="btn btn-dashed">+ Link Account</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Preferences -->
+  <section class="tab-panel" id="panel-preferences">
+    <div class="two-col">
+      <div>
+        <h2 class="section-title">Notifications</h2>
+        <div class="card" style="padding:4px 24px;" id="notif-list"></div>
+      </div>
+      <div>
+        <h2 class="section-title">Display</h2>
+        <div class="field">
+          <label>Date Format</label>
+          <select><option>MM/DD/YYYY</option><option>DD/MM/YYYY</option><option>YYYY-MM-DD</option></select>
+        </div>
+        <div class="field">
+          <label>Number Format</label>
+          <select><option>1,000.00 (US)</option><option>1.000,00 (EU)</option></select>
+        </div>
+        <div class="field">
+          <label>Default View</label>
+          <select><option>Home</option><option>Dashboard</option><option>Goals</option></select>
+        </div>
+        <button class="btn btn-primary" id="save-prefs">Save Preferences</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security -->
+  <section class="tab-panel" id="panel-security">
+    <div class="two-col">
+      <div>
+        <h2 class="section-title">Password</h2>
+        <div class="field"><label>Current Password</label><input type="password" /></div>
+        <div class="field"><label>New Password</label><input type="password" /></div>
+        <div class="field"><label>Confirm New Password</label><input type="password" /></div>
+        <button class="btn btn-primary" id="update-pw">Update Password</button>
+      </div>
+      <div>
+        <h2 class="section-title">Access &amp; Privacy</h2>
+        <div class="card" style="margin-bottom:24px; padding:4px 24px;" id="access-list"></div>
+        <div class="card">
+          <p class="card-label">Active sessions</p>
+          <div id="sessions-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="js/data.js"></script>
+<script>
+  document.title = "Twinfin — Profile";
+  const u = TWINFIN_DATA.user;
+
+  document.getElementById("p-avatar").textContent = u.initials;
+  document.getElementById("p-name").textContent = u.name;
+  document.getElementById("p-meta").textContent = `${u.email} · Member since ${u.memberSince}`;
+
+  document.getElementById("f-name").value = u.name;
+  document.getElementById("f-email").value = u.email;
+  document.getElementById("f-phone").value = u.phone;
+  document.getElementById("f-dob").value = u.dob;
+  document.getElementById("f-occupation").value = u.occupation;
+  document.getElementById("f-city").value = u.city;
+  document.getElementById("f-state").value = u.state;
+  document.getElementById("f-country").value = u.country;
+  document.getElementById("f-timezone").value = u.timezone;
+
+  // Tab switching
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+    });
+  });
+
+  // Linked accounts
+  document.getElementById("accounts-list").innerHTML = TWINFIN_DATA.linkedAccounts
+    .map(
+      (a) => `<div class="account-row">
+        <div>
+          <div class="account-name">${a.name}</div>
+          <div class="account-sub">${a.type} · ····${a.last4}</div>
+        </div>
+        <div>
+          <div class="account-bal">$${a.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+          <a href="#" class="account-unlink">Unlink</a>
+        </div>
+      </div>`
+    )
+    .join("");
+
+  // Notification toggles
+  const notifs = [
+    { title: "Weekly Summary", sub: "Email digest every Monday morning", on: true },
+    { title: "Bill Reminders", sub: "3 days before a bill is due", on: true },
+    { title: "Goal Milestones", sub: "Notify when you hit a goal milestone", on: true },
+    { title: "Spending Alerts", sub: "When you exceed category budget", on: false },
+    { title: "Large Transactions", sub: "Transactions over $500", on: true },
+  ];
+  document.getElementById("notif-list").innerHTML = notifs
+    .map(
+      (n, i) => `<div class="list-row">
+        <div><div class="list-row-title">${n.title}</div><div class="list-row-sub">${n.sub}</div></div>
+        <button class="switch ${n.on ? "on" : ""}" data-idx="${i}" aria-label="Toggle ${n.title}"></button>
+      </div>`
+    )
+    .join("");
+
+  // Access & privacy toggles
+  const access = [
+    { title: "Two-Factor Authentication", sub: "Require 2FA on login", on: true },
+    { title: "Session Timeout", sub: "Auto-logout after 30 minutes idle", on: true },
+    { title: "Data Sharing", sub: "Allow anonymized data for product improvements", on: false },
+  ];
+  document.getElementById("access-list").innerHTML = access
+    .map(
+      (a, i) => `<div class="list-row">
+        <div><div class="list-row-title">${a.title}</div><div class="list-row-sub">${a.sub}</div></div>
+        <button class="switch ${a.on ? "on" : ""}" data-idx="${i}" aria-label="Toggle ${a.title}"></button>
+      </div>`
+    )
+    .join("");
+
+  // Wire up all toggle switches
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("switch")) {
+      e.target.classList.toggle("on");
+    }
+  });
+
+  // Active sessions
+  document.getElementById("sessions-list").innerHTML = `
+    <div class="session-row">
+      <div><div class="session-device">MacBook Pro 14-inch</div><div class="session-loc">San Francisco, CA · Now</div></div>
+    </div>
+    <div class="session-row">
+      <div><div class="session-device">iPhone 16 Pro</div><div class="session-loc">San Francisco, CA · 2 hours ago</div></div>
+      <a href="#" class="session-revoke">Revoke</a>
+    </div>
+  `;
+</script>
+</body>
+</html>
