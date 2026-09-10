@@ -138,3 +138,7 @@ const Charts = {
     return "$" + Math.round(v);
   },
 };
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { Charts };
+}
