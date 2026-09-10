@@ -49,4 +49,12 @@ test("Financial Calculations & Metrics Suite", async (t) => {
       assert.ok(metric.value >= 0 && metric.value <= 100, `${metric.label} score must be 0-100`);
     });
   });
+
+  await t.test("Emergency fund coverage meets strict safety threshold", () => {
+    const emergencyFund = TWINFIN_DATA.financialHealth.breakdown.find(
+      (m) => m.label === "Emergency Fund"
+    );
+    assert.ok(emergencyFund, "Emergency Fund metric must exist");
+    assert.ok(emergencyFund.value >= 95, "Emergency fund score must achieve minimum safety score of 95");
+  });
 });
