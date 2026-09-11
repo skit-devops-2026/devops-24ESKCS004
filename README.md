@@ -1,4 +1,4 @@
-# Digital Twin for Personal Finance — DevOps Automation
+# Digital Twin for Personal Finance 
 
 [![CI Pipeline](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/ci.yml/badge.svg)](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/ci.yml)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
@@ -12,7 +12,7 @@
 - **Institution**: Swami Keshvanand Institute of Technology, Management & Gramothan (SKIT), Jaipur
 - **Course**: DevOps 2026
 - **Assessment**: Mid-Term 1 (MT1) — Modules 1 to 4
-- **GitHub Repository**: [https://github.com/skit-devops-2026/devops-24ESKCS004](https://github.com/skit-devops-2026/devops-24ESKCS004)
+- **GitHub Repository**: (https://github.com/skit-devops-2026/devops-24ESKCS004)
 
 ---
 
