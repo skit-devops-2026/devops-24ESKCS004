@@ -9,11 +9,16 @@
     "lint": "node -c js/*.js tests/*.test.js",
     "test:legacy": "node --test tests/*.test.js"
   },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.4.0"
+  },
   "keywords": [
     "devops",
     "todo-practice",
     "ci-cd",
     "docker",
+    "mongodb",
     "github-actions"
   ],
   "author": "Aashi Goyal <aashigoyal7002@gmail.com>",

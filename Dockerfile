@@ -1,17 +1,13 @@
-FROM node:20-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy dependency manifests
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --omit=dev
+RUN npm install
 
-# Copy all source files (package.json, utils.js, test.js, server.js, public/, etc.)
 COPY . .
 
-EXPOSE 3000
+EXPOSE 5000
 
-# Default application start command
 CMD ["npm", "start"]

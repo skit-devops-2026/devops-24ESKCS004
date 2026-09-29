@@ -1,12 +1,21 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  todo-app:
+  app:
     build: .
-    image: todo-practice
-    container_name: todo-practice-app
     ports:
-      - "3000:3000"
+      - "5000:5000"
+    depends_on:
+      - db
     environment:
-      - PORT=3000
-    restart: unless-stopped
+      - MONGO_URL=mongodb://db:27017/todos
+
+  db:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
