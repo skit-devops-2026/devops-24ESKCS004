@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List | DevOps CI Practice</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --border: #334155;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #0b1120;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        button.btn-add {
+            background: var(--accent);
+            color: #0b1120;
+            font-weight: 600;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button.btn-add:hover {
+            background: var(--accent-hover);
+            color: #ffffff;
+        }
+
+        ul.todo-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        li.todo-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: #0b1120;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: border-color 0.2s;
+        }
+
+        li.todo-item.completed span.todo-text {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .todo-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .todo-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .todo-text {
+            font-size: 1rem;
+            word-break: break-word;
+        }
+
+        .btn-delete {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .btn-delete:hover {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem 0;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>To-Do List</h1>
+            <p class="subtitle">Docker Containerized Application with CI/CD</p>
+        </header>
+
+        <div class="input-group">
+            <input type="text" id="todoInput" placeholder="Add a new task..." autofocus>
+            <button class="btn-add" id="addBtn">Add</button>
+        </div>
+
+        <ul class="todo-list" id="todoList"></ul>
+        <div id="emptyState" class="empty-state" style="display: none;">No tasks yet. Add one above!</div>
+
+        <footer>
+            SKIT DevOps 2026 &bull; CI + Docker Practice
+        </footer>
+    </div>
+
+    <script>
+        const todoInput = document.getElementById("todoInput");
+        const addBtn = document.getElementById("addBtn");
+        const todoList = document.getElementById("todoList");
+        const emptyState = document.getElementById("emptyState");
+
+        async function fetchTodos() {
+            try {
+                const res = await fetch("/api/todos");
+                const todos = await res.json();
+                renderTodos(todos);
+            } catch (err) {
+                console.error("Failed to fetch todos", err);
+            }
+        }
+
+        function renderTodos(todos) {
+            todoList.innerHTML = "";
+            if (!todos || todos.length === 0) {
+                emptyState.style.display = "block";
+                return;
+            }
+            emptyState.style.display = "none";
+
+            todos.forEach(todo => {
+                const li = document.createElement("li");
+                li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+
+                const contentDiv = document.createElement("div");
+                contentDiv.className = "todo-content";
+
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.className = "todo-checkbox";
+                checkbox.checked = todo.completed;
+                checkbox.addEventListener("change", () => toggleTodo(todo.id));
+
+                const span = document.createElement("span");
+                span.className = "todo-text";
+                span.textContent = todo.text;
+                span.addEventListener("click", () => toggleTodo(todo.id));
+
+                contentDiv.appendChild(checkbox);
+                contentDiv.appendChild(span);
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className = "btn-delete";
+                deleteBtn.innerHTML = "&times;";
+                deleteBtn.title = "Delete task";
+                deleteBtn.addEventListener("click", () => deleteTodo(todo.id));
+
+                li.appendChild(contentDiv);
+                li.appendChild(deleteBtn);
+                todoList.appendChild(li);
+            });
+        }
+
+        async function addTodo() {
+            const text = todoInput.value.trim();
+            if (!text) return;
+
+            try {
+                const res = await fetch("/api/todos", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text })
+                });
+                if (res.ok) {
+                    todoInput.value = "";
+                    fetchTodos();
+                }
+            } catch (err) {
+                console.error("Failed to add todo", err);
+            }
+        }
+
+        async function toggleTodo(id) {
+            try {
+                await fetch(`/api/todos/${id}`, { method: "PUT" });
+                fetchTodos();
+            } catch (err) {
+                console.error("Failed to toggle todo", err);
+            }
+        }
+
+        async function deleteTodo(id) {
+            try {
+                await fetch(`/api/todos/${id}`, { method: "DELETE" });
+                fetchTodos();
+            } catch (err) {
+                console.error("Failed to delete todo", err);
+            }
+        }
+
+        addBtn.addEventListener("click", addTodo);
+        todoInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") addTodo();
+        });
+
+        fetchTodos();
+    </script>
+</body>
+</html>
