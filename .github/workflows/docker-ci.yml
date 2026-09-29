@@ -36,9 +36,4 @@ jobs:
       - name: Push to GHCR
         run: |
           ACTOR_LC=$(echo "${{ github.actor }}" | tr '[:upper:]' '[:lower:]')
-          docker push ghcr.io/${ACTOR_LC}/todo-practice:${{ github.sha }} || {
-            OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-            echo "Push to actor namespace failed, attempting repository owner namespace: ${OWNER_LC}"
-            docker tag todo-practice ghcr.io/${OWNER_LC}/todo-practice:${{ github.sha }}
-            docker push ghcr.io/${OWNER_LC}/todo-practice:${{ github.sha }}
-          }
+          docker push ghcr.io/${ACTOR_LC}/todo-practice:${{ github.sha }}
