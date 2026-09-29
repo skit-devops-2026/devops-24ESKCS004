@@ -16,6 +16,34 @@
 
 ---
 
+## Live Demo
+
+- **Production URL**: [https://devops-24eskcs004-todo.onrender.com](https://devops-24eskcs004-todo.onrender.com)
+- **Application Health Endpoint**: [https://devops-24eskcs004-todo.onrender.com/health](https://devops-24eskcs004-todo.onrender.com/health)
+- **Prometheus Metrics Endpoint**: [https://devops-24eskcs004-todo.onrender.com/metrics](https://devops-24eskcs004-todo.onrender.com/metrics)
+
+---
+
+## DevOps Modules M5, M6 & M7 Overview
+
+### Module 5 — Containerization
+- **Dockerfile**: Production-ready multi-tier container based on `node:18-alpine` exposing port `5000`.
+- **Docker Compose**: Orchestrates multi-container architecture with Node.js `app` and `mongo:6` `db` with named volume `mongo-data` for database persistence.
+- **Container Registry**: Configured for GitHub Container Registry (`ghcr.io/aashirgoyal/todo-practice:latest`) and Docker Hub (`aashirgoyal/todo-practice:latest`).
+
+### Module 6 — Deployment & Monitoring
+- **Deployment Platform**: Containerized deployment with live endpoints and automated container startup.
+- **Prometheus Scrape Configuration**: Located in `monitoring/prometheus.yml`, scraping `/metrics` on port 5000.
+- **Monitoring Dashboard**: Production Grafana dashboard export located in `monitoring/dashboard.json` tracking RPS, latency percentiles, CPU, RSS, and heap memory.
+- **Deployment Verification**: Visual verification screenshot saved in `docs/deployment.png`.
+
+### Module 7 — Kubernetes Orchestration
+- **Deployment Manifest**: Located in `k8s/deployment.yaml` with replicas, resource limits, liveness and readiness probes, and database integration.
+- **Service Manifest**: Located in `k8s/service.yaml` exposing the application via `NodePort` on port `30005` and MongoDB via `ClusterIP`.
+- **Cluster Verification**: Verified using local `kind` cluster with pods and service status documented in `docs/kubernetes-pods.png`.
+
+---
+
 ## Project Overview
 
 **Twinfin** is an interactive, dependency-free Personal Finance Digital Twin web application and analytical dashboard. It enables users to simulate, model, and track their complete financial lifestyle through:

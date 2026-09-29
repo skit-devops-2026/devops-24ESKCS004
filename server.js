@@ -7,10 +7,42 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URL = process.env.MONGO_URL || "mongodb://localhost:27017/todos";
 
+const client = require("prom-client");
+
+// Collect default metrics (CPU, memory, event loop lag, etc.)
+client.collectDefaultMetrics({ register: client.register });
+
+// Custom Prometheus metrics for HTTP requests
+const httpRequestDurationSeconds = new client.Histogram({
+    name: "http_request_duration_seconds",
+    help: "Duration of HTTP requests in seconds",
+    labelNames: ["method", "route", "code"],
+    buckets: [0.05, 0.1, 0.3, 0.5, 1, 2, 5]
+});
+
+const httpRequestsTotal = new client.Counter({
+    name: "http_requests_total",
+    help: "Total number of HTTP requests",
+    labelNames: ["method", "route", "code"]
+});
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
+
+// Metrics recording middleware
+app.use((req, res, next) => {
+    const start = process.hrtime();
+    res.on("finish", () => {
+        const diff = process.hrtime(start);
+        const durationInSeconds = diff[0] + diff[1] / 1e9;
+        const route = req.route ? req.route.path : req.path;
+        httpRequestDurationSeconds.labels(req.method, route, String(res.statusCode)).observe(durationInSeconds);
+        httpRequestsTotal.labels(req.method, route, String(res.statusCode)).inc();
+    });
+    next();
+});
 
 // MongoDB Schema & Model
 const todoSchema = new mongoose.Schema({
@@ -110,6 +142,16 @@ app.put("/todos/:id", async (req, res) => {
 app.get("/api/todos", (req, res) => res.redirect(307, "/todos"));
 app.post("/api/todos", (req, res) => res.redirect(307, "/todos"));
 app.delete("/api/todos/:id", (req, res) => res.redirect(307, `/todos/${req.params.id}`));
+
+// Prometheus metrics endpoint
+app.get("/metrics", async (req, res) => {
+    try {
+        res.set("Content-Type", client.register.contentType);
+        res.end(await client.register.metrics());
+    } catch (err) {
+        res.status(500).end(err.message);
+    }
+});
 
 // Health check endpoint
 app.get("/health", (req, res) => {
