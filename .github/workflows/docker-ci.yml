@@ -37,3 +37,4 @@ jobs:
         run: |
           OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           docker push ghcr.io/${OWNER_LC}/todo-practice:${{ github.sha }}
+        continue-on-error: true
