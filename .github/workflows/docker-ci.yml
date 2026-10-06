@@ -8,12 +8,10 @@ on:
 permissions:
   contents: read
   packages: write
-  id-token: write
 
 env:
-  REGISTRY_GHCR: ghcr.io
-  REGISTRY_DH: docker.io
   IMAGE_NAME: todo-practice
+  GHCR_IMAGE: ghcr.io/aashirgoyal/todo-practice
 
 jobs:
   build-and-push:
@@ -37,51 +35,40 @@ jobs:
       - name: Run tests inside the container
         run: docker run --rm ${{ env.IMAGE_NAME }}:local npm test
 
-      # ─── 5. Log in to GHCR ──────────────────────────────────────────
+      # ─── 5. Log in to GHCR using PAT ────────────────────────────────
       - name: Log in to GitHub Container Registry (GHCR)
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY_GHCR }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: aashirgoyal
+          password: ${{ secrets.CR_PAT }}
 
-      # ─── 6. Push IMAGE 1/2 → GHCR ───────────────────────────────────
+      # ─── 6. Push IMAGE 1/2 → GHCR (under personal account) ─────────
       - name: Push IMAGE 1/2 to GHCR
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          labels: |
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
-
-      - name: Confirm IMAGE 1/2 pushed
-        run: echo "✅ IMAGE 1/2 — Pushed to GHCR ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
+        run: |
+          docker tag ${{ env.IMAGE_NAME }}:local ${{ env.GHCR_IMAGE }}:latest
+          docker tag ${{ env.IMAGE_NAME }}:local ${{ env.GHCR_IMAGE }}:${{ github.sha }}
+          docker push ${{ env.GHCR_IMAGE }}:latest
+          docker push ${{ env.GHCR_IMAGE }}:${{ github.sha }}
+          echo "✅ IMAGE 1/2 — Pushed to GHCR: ${{ env.GHCR_IMAGE }}:latest"
 
       # ─── 7. Log in to Docker Hub ────────────────────────────────────
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY_DH }}
+          registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # ─── 8. Push IMAGE 2/2 → Docker Hub ─────────────────────────────
       - name: Push IMAGE 2/2 to Docker Hub
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-
-      - name: Confirm IMAGE 2/2 pushed
-        run: echo "✅ IMAGE 2/2 — Pushed to Docker Hub ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
+        run: |
+          DH_USER="${{ secrets.DOCKERHUB_USERNAME }}"
+          docker tag ${{ env.IMAGE_NAME }}:local ${DH_USER}/${{ env.IMAGE_NAME }}:latest
+          docker tag ${{ env.IMAGE_NAME }}:local ${DH_USER}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${DH_USER}/${{ env.IMAGE_NAME }}:latest
+          docker push ${DH_USER}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          echo "✅ IMAGE 2/2 — Pushed to Docker Hub: ${DH_USER}/${{ env.IMAGE_NAME }}:latest"
 
       # ─── 9. Summary ──────────────────────────────────────────────────
       - name: Publish push summary
@@ -91,7 +78,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| # | Registry | Image | Tags |" >> $GITHUB_STEP_SUMMARY
           echo "|---|----------|-------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| **1/2** ✅ | GHCR | \`ghcr.io/${{ github.repository_owner }}/todo-practice\` | \`:latest\`, \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **2/2** ✅ | Docker Hub | \`${{ secrets.DOCKERHUB_USERNAME }}/todo-practice\` | \`:latest\`, \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **1/2** | GHCR | \`ghcr.io/aashirgoyal/todo-practice\` | \`:latest\`, \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **2/2** | Docker Hub | \`aashirgoyal/todo-practice\` | \`:latest\`, \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Student**: Aashi Goyal (24ESKCS004) | **Commit**: \`${{ github.sha }}\` | **Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
