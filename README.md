@@ -34,7 +34,11 @@
 - **Tagging Strategy**: Both registries receive two tags per push: `:latest` (always current) and `:<commit-sha>` (immutable, traceable build).
 
 ### Module 6 — Deployment & Monitoring
-- **Deployment Platform**: Containerized deployment with live endpoints and automated container startup.
+- **Deployment Platform**: Render.com (free tier) — deployed via `render.yaml` Blueprint with auto-provisioned MongoDB database.
+- **Live URL**: [https://devops-24eskcs004-todo.onrender.com](https://devops-24eskcs004-todo.onrender.com)
+- **Health Endpoint (1/2)**: [https://devops-24eskcs004-todo.onrender.com/health](https://devops-24eskcs004-todo.onrender.com/health) — returns `{"status":"healthy",...}`
+- **Prometheus Metrics Endpoint (2/2)**: [https://devops-24eskcs004-todo.onrender.com/metrics](https://devops-24eskcs004-todo.onrender.com/metrics) — Prometheus scrape target
+- **Render Blueprint**: `render.yaml` at repository root — Infrastructure-as-Code for auto-deploy on push to `main`.
 - **Prometheus Scrape Configuration**: Located in `monitoring/prometheus.yml`, scraping `/metrics` on port 5000.
 - **Monitoring Dashboard**: Production Grafana dashboard export located in `monitoring/dashboard.json` tracking RPS, latency percentiles, CPU, RSS, and heap memory.
 - **Deployment Verification**: Visual verification screenshot saved in `docs/deployment.png`.

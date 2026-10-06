@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: devops-24eskcs004-todo
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGO_URL
+        fromDatabase:
+          name: devops-24eskcs004-mongo
+          property: connectionString
+    healthCheckPath: /health
+
+databases:
+  - name: devops-24eskcs004-mongo
+    plan: free
+    databaseName: todos
