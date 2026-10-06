@@ -29,7 +29,9 @@
 ### Module 5 — Containerization
 - **Dockerfile**: Production-ready multi-tier container based on `node:18-alpine` exposing port `5000`.
 - **Docker Compose**: Orchestrates multi-container architecture with Node.js `app` and `mongo:6` `db` with named volume `mongo-data` for database persistence.
-- **Container Registry**: Configured for GitHub Container Registry (`ghcr.io/aashirgoyal/todo-practice:latest`) and Docker Hub (`aashirgoyal/todo-practice:latest`).
+- **Container Registry — Image 1/2 (GHCR)**: `ghcr.io/aashirgoyal/todo-practice:latest` — auto-pushed via GitHub Actions on every push to `main`. Uses built-in `GITHUB_TOKEN` for authentication.
+- **Container Registry — Image 2/2 (Docker Hub)**: `aashirgoyal/todo-practice:latest` — pushed in the same `docker-ci.yml` pipeline using `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository secrets.
+- **Tagging Strategy**: Both registries receive two tags per push: `:latest` (always current) and `:<commit-sha>` (immutable, traceable build).
 
 ### Module 6 — Deployment & Monitoring
 - **Deployment Platform**: Containerized deployment with live endpoints and automated container startup.

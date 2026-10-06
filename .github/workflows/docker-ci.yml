@@ -1,40 +1,85 @@
-name: Docker CI
+name: Docker CI — Build & Push to Container Registries
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
 
 jobs:
-  build-and-test:
+  build-and-push:
+    name: Build, Test & Push Docker Image
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out the code
+      # ─── 1. Checkout ────────────────────────────────────────────────
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Build the Docker image
-        run: docker build -t todo-practice .
+      # ─── 2. Build ───────────────────────────────────────────────────
+      - name: Build Docker image
+        run: docker build -t todo-practice:local .
 
+      # ─── 3. Test inside container ───────────────────────────────────
       - name: Run tests inside the container
-        run: docker run --rm todo-practice npm test
+        run: docker run --rm todo-practice:local npm test
 
-      - name: Tag the image with the commit SHA
-        run: docker tag todo-practice todo-practice:${{ github.sha }}
+      # ─── 4. Log in to GitHub Container Registry (GHCR) ─────────────
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Tag for GHCR
+      # ─── 5. Tag & Push IMAGE 1 → GHCR (:latest + :sha) ─────────────
+      - name: Tag image for GHCR
         run: |
           OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker tag todo-practice ghcr.io/${OWNER_LC}/todo-practice:${{ github.sha }}
+          docker tag todo-practice:local ghcr.io/${OWNER_LC}/todo-practice:latest
+          docker tag todo-practice:local ghcr.io/${OWNER_LC}/todo-practice:${{ github.sha }}
 
-      - name: Push to GHCR
+      - name: Push image to GHCR
         run: |
           OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          docker push ghcr.io/${OWNER_LC}/todo-practice:latest
           docker push ghcr.io/${OWNER_LC}/todo-practice:${{ github.sha }}
-        continue-on-error: true
+          echo "✅ IMAGE 1/2 — Pushed to GHCR: ghcr.io/${OWNER_LC}/todo-practice"
+
+      # ─── 6. Log in to Docker Hub ────────────────────────────────────
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # ─── 7. Tag & Push IMAGE 2 → Docker Hub (:latest + :sha) ───────
+      - name: Tag image for Docker Hub
+        run: |
+          OWNER_LC=$(echo "${{ secrets.DOCKERHUB_USERNAME }}" | tr '[:upper:]' '[:lower:]')
+          docker tag todo-practice:local ${OWNER_LC}/todo-practice:latest
+          docker tag todo-practice:local ${OWNER_LC}/todo-practice:${{ github.sha }}
+
+      - name: Push image to Docker Hub
+        run: |
+          OWNER_LC=$(echo "${{ secrets.DOCKERHUB_USERNAME }}" | tr '[:upper:]' '[:lower:]')
+          docker push ${OWNER_LC}/todo-practice:latest
+          docker push ${OWNER_LC}/todo-practice:${{ github.sha }}
+          echo "✅ IMAGE 2/2 — Pushed to Docker Hub: ${OWNER_LC}/todo-practice"
+
+      # ─── 8. Summary ─────────────────────────────────────────────────
+      - name: Publish push summary
+        if: always()
+        run: |
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "### 🐳 Docker Image Push Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| # | Registry | Image | Tags |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|----------|-------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 1 | GHCR | \`ghcr.io/${OWNER_LC}/todo-practice\` | \`:latest\`, \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| 2 | Docker Hub | \`aashirgoyal/todo-practice\` | \`:latest\`, \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: \`${{ github.sha }}\`  **Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
