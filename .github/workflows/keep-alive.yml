@@ -1,0 +1,33 @@
+name: Keep Render App Alive
+
+on:
+  schedule:
+    # Ping every 14 minutes to prevent Render free-tier spin-down (spins down after 15 min)
+    - cron: "*/14 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Live URL
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping health endpoint
+        run: |
+          echo "🏓 Pinging https://devops-24eskcs004.onrender.com/health ..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            https://devops-24eskcs004.onrender.com/health \
+            --max-time 60 --retry 3 --retry-delay 5)
+          echo "HTTP Status: $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Live URL is UP — $STATUS"
+          else
+            echo "⚠️  Live URL returned $STATUS (may be waking up from sleep)"
+          fi
+
+      - name: Ping root endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            https://devops-24eskcs004.onrender.com/ \
+            --max-time 60 --retry 3 --retry-delay 5)
+          echo "Root endpoint HTTP Status: $STATUS"

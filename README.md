@@ -1,9 +1,11 @@
 # Digital Twin for Personal Finance 
 
 [![CI Pipeline](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/ci.yml/badge.svg)](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/ci.yml)
+[![Docker CI](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/docker-ci.yml/badge.svg)](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/docker-ci.yml)
+[![Docker Hub](https://img.shields.io/docker/v/aashigoyal/todo-practice?label=Docker%20Hub&logo=docker)](https://hub.docker.com/r/aashigoyal/todo-practice)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![DevOps Assessment](https://img.shields.io/badge/SKIT%20DevOps-MT1%20Modules%201--4-orange.svg)](https://github.com/skit-devops-2026)
+[![DevOps Assessment](https://img.shields.io/badge/SKIT%20DevOps-MT2%20Modules%205--7-orange.svg)](https://github.com/skit-devops-2026)
 
 ## Academic & Course Information
 
@@ -29,8 +31,8 @@
 ### Module 5 — Containerization
 - **Dockerfile**: Production-ready multi-tier container based on `node:18-alpine` exposing port `5000`.
 - **Docker Compose**: Orchestrates multi-container architecture with Node.js `app` and `mongo:6` `db` with named volume `mongo-data` for database persistence.
-- **Container Registry — Image 1/2 (GHCR)**: `ghcr.io/aashirgoyal/todo-practice:latest` — auto-pushed via GitHub Actions on every push to `main`. Uses built-in `GITHUB_TOKEN` for authentication.
-- **Container Registry — Image 2/2 (Docker Hub)**: `aashirgoyal/todo-practice:latest` — pushed in the same `docker-ci.yml` pipeline using `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository secrets.
+- **Container Registry — Image 1/2 (GHCR)**: `ghcr.io/skit-devops-2026/todo-practice:latest` — auto-pushed via GitHub Actions on every push to `main`. Uses built-in `GITHUB_TOKEN` for authentication (no additional secret required).
+- **Container Registry — Image 2/2 (Docker Hub)**: `aashigoyal/todo-practice:latest` — pushed in the same `docker-ci.yml` pipeline using `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository secrets. Pull with: `docker pull aashigoyal/todo-practice:latest`
 - **Tagging Strategy**: Both registries receive two tags per push: `:latest` (always current) and `:<commit-sha>` (immutable, traceable build).
 
 ### Module 6 — Deployment & Monitoring

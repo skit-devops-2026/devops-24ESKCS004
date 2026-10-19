@@ -11,7 +11,7 @@ permissions:
 
 env:
   IMAGE_NAME: todo-practice
-  GHCR_IMAGE: ghcr.io/aashirgoyal/todo-practice
+  GHCR_IMAGE: ghcr.io/${{ github.repository_owner }}/todo-practice
 
 jobs:
   build-and-push:
@@ -35,15 +35,15 @@ jobs:
       - name: Run tests inside the container
         run: docker run --rm ${{ env.IMAGE_NAME }}:local npm test
 
-      # ─── 5. Log in to GHCR using PAT ────────────────────────────────
+      # ─── 5. Log in to GHCR (using built-in GITHUB_TOKEN) ────────────
       - name: Log in to GitHub Container Registry (GHCR)
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: aashirgoyal
-          password: ${{ secrets.CR_PAT }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ─── 6. Push IMAGE 1/2 → GHCR (under personal account) ─────────
+      # ─── 6. Push IMAGE 1/2 → GHCR ───────────────────────────────────
       - name: Push IMAGE 1/2 to GHCR
         run: |
           docker tag ${{ env.IMAGE_NAME }}:local ${{ env.GHCR_IMAGE }}:latest
@@ -74,11 +74,12 @@ jobs:
       - name: Publish push summary
         if: always()
         run: |
+          DH_USER="${{ secrets.DOCKERHUB_USERNAME }}"
           echo "### 🐳 Docker Image Push Summary — Module 5 Containerization" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| # | Registry | Image | Tags |" >> $GITHUB_STEP_SUMMARY
           echo "|---|----------|-------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| **1/2** | GHCR | \`ghcr.io/aashirgoyal/todo-practice\` | \`:latest\`, \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **2/2** | Docker Hub | \`aashirgoyal/todo-practice\` | \`:latest\`, \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **1/2** | GHCR | \`${{ env.GHCR_IMAGE }}\` | \`:latest\`, \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **2/2** | Docker Hub | \`${DH_USER}/${{ env.IMAGE_NAME }}\` | \`:latest\`, \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Student**: Aashi Goyal (24ESKCS004) | **Commit**: \`${{ github.sha }}\` | **Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY

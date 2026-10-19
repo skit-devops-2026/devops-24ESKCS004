@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: todo-app
-          image: ghcr.io/aashirgoyal/todo-practice:latest
+          image: ghcr.io/skit-devops-2026/todo-practice:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
