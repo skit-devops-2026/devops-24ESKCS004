@@ -2,6 +2,7 @@
 
 [![CI Pipeline](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/ci.yml/badge.svg)](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/ci.yml)
 [![Docker CI](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/docker-ci.yml/badge.svg)](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/docker-ci.yml)
+[![Pages](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/pages.yml/badge.svg)](https://github.com/skit-devops-2026/devops-24ESKCS004/actions/workflows/pages.yml)
 [![Docker Hub](https://img.shields.io/docker/v/aashigoyal/todo-practice?label=Docker%20Hub&logo=docker)](https://hub.docker.com/r/aashigoyal/todo-practice)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -20,9 +21,10 @@
 
 ## Live Demo
 
-- **Production URL**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com)
-- **Application Health Endpoint**: [https://devops-24eskcs004.onrender.com/health](https://devops-24eskcs004.onrender.com/health)
-- **Prometheus Metrics Endpoint**: [https://devops-24eskcs004.onrender.com/metrics](https://devops-24eskcs004.onrender.com/metrics)
+- **Live URL (GitHub Pages)**: [https://skit-devops-2026.github.io/devops-24ESKCS004/](https://skit-devops-2026.github.io/devops-24ESKCS004/)
+- **Backend API (Render)**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com)
+- **Health Endpoint**: [https://devops-24eskcs004.onrender.com/health](https://devops-24eskcs004.onrender.com/health)
+- **Prometheus Metrics**: [https://devops-24eskcs004.onrender.com/metrics](https://devops-24eskcs004.onrender.com/metrics)
 
 ---
 
@@ -36,11 +38,11 @@
 - **Tagging Strategy**: Both registries receive two tags per push: `:latest` (always current) and `:<commit-sha>` (immutable, traceable build).
 
 ### Module 6 — Deployment & Monitoring
-- **Deployment Platform**: Render.com (free tier) — deployed via `render.yaml` Blueprint with auto-provisioned MongoDB database.
-- **Live URL**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com)
-- **Health Endpoint (1/2)**: [https://devops-24eskcs004.onrender.com/health](https://devops-24eskcs004.onrender.com/health) — returns `{"status":"healthy",...}`
-- **Prometheus Metrics Endpoint (2/2)**: [https://devops-24eskcs004.onrender.com/metrics](https://devops-24eskcs004.onrender.com/metrics) — Prometheus scrape target
-- **Render Blueprint**: `render.yaml` at repository root — Infrastructure-as-Code for auto-deploy on push to `main`.
+- **Deployment Platform**: GitHub Pages (static frontend) + Render.com (Node.js API backend).
+- **Live URL (GitHub Pages)**: [https://skit-devops-2026.github.io/devops-24ESKCS004/](https://skit-devops-2026.github.io/devops-24ESKCS004/) — auto-deployed via `pages.yml` GitHub Actions workflow on every push to `main`.
+- **Backend API URL (Render)**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com) — Node.js + MongoDB deployed via `render.yaml` Blueprint.
+- **Health Endpoint**: [https://devops-24eskcs004.onrender.com/health](https://devops-24eskcs004.onrender.com/health) — returns `{"status":"healthy",...}`
+- **Prometheus Metrics Endpoint**: [https://devops-24eskcs004.onrender.com/metrics](https://devops-24eskcs004.onrender.com/metrics) — Prometheus scrape target
 - **Prometheus Scrape Configuration**: Located in `monitoring/prometheus.yml`, scraping `/metrics` on port 5000.
 - **Monitoring Dashboard**: Production Grafana dashboard export located in `monitoring/dashboard.json` tracking RPS, latency percentiles, CPU, RSS, and heap memory.
 - **Deployment Verification**: Visual verification screenshot saved in `docs/deployment.png`.
