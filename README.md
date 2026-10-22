@@ -22,11 +22,6 @@
 ## Live URL
 
 - **Live URL**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com)
-- **Live URL (Render)**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com)
-- **Live URL (GitHub Pages)**: [https://skit-devops-2026.github.io/devops-24ESKCS004/](https://skit-devops-2026.github.io/devops-24ESKCS004/)
-- **Health Endpoint (1/2)**: [https://devops-24eskcs004.onrender.com/health](https://devops-24eskcs004.onrender.com/health)
-- **Prometheus Metrics Endpoint (2/2)**: [https://devops-24eskcs004.onrender.com/metrics](https://devops-24eskcs004.onrender.com/metrics)
-- **Backend API (Render)**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com)
 
 ---
 
