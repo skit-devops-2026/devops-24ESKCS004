@@ -91,13 +91,23 @@ const todoSchema = new mongoose.Schema({
 const Todo = mongoose.model("Todo", todoSchema);
 
 // Connect to MongoDB
-mongoose.connect(MONGO_URL)
-    .then(() => {
-        console.log(`Connected to MongoDB at ${MONGO_URL}`);
-    })
-    .catch((err) => {
-        console.error("MongoDB connection error:", err.message);
-    });
+const sanitizedMongoUrl = MONGO_URL.replace(/:\/\/([^:]+):([^@]+)@/, "://$1:****@");
+
+mongoose.connection.on("connected", () => {
+    console.log(`Mongoose connected to MongoDB (${sanitizedMongoUrl})`);
+});
+mongoose.connection.on("error", (err) => {
+    console.error("Mongoose connection error:", err.message);
+});
+mongoose.connection.on("disconnected", () => {
+    console.log("Mongoose disconnected from MongoDB");
+});
+
+mongoose.connect(MONGO_URL, {
+    serverSelectionTimeoutMS: 5000
+}).catch((err) => {
+    console.error("Initial MongoDB connection error:", err.message);
+});
 
 // Routes
 // GET /todos - Fetch all todos
