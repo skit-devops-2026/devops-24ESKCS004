@@ -1,10 +1,12 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
+const cors = require("cors");
 const { isValidTodoText } = require("./utils");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || "0.0.0.0";
 const MONGO_URL = process.env.MONGO_URL || "mongodb://localhost:27017/todos";
 
 const client = require("prom-client");
@@ -27,8 +29,33 @@ const httpRequestsTotal = new client.Counter({
 });
 
 // Middleware
+app.use(cors());
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Root endpoint: returns 200 OK with { status: "ok", message: "Server is running" }
+// for automated pings/curls, or renders the frontend when requested by browser HTML navigation
+app.get("/", (req, res) => {
+    const acceptsHtml = req.accepts(["json", "html"]) === "html";
+    if (acceptsHtml && !req.query.json) {
+        return res.sendFile(path.join(__dirname, "public", "index.html"));
+    }
+    return res.status(200).json({
+        status: "ok",
+        message: "Server is running"
+    });
+});
+
 app.use(express.static(path.join(__dirname, "public")));
 
 // Metrics recording middleware
@@ -155,17 +182,36 @@ app.get("/metrics", async (req, res) => {
 
 // Health check endpoint
 app.get("/health", (req, res) => {
-    res.json({
-        status: "healthy",
+    res.status(200).json({
+        status: "ok",
+        message: "Server is running",
         mongodb: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
-        port: PORT,
+        port: Number(PORT),
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Dedicated /api and /api/health endpoints for automated API verifications
+app.get("/api", (req, res) => {
+    res.status(200).json({
+        status: "ok",
+        message: "Server is running"
+    });
+});
+
+app.get("/api/health", (req, res) => {
+    res.status(200).json({
+        status: "ok",
+        message: "Server is running",
+        mongodb: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+        port: Number(PORT),
         timestamp: new Date().toISOString()
     });
 });
 
 if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`Server running at http://localhost:${PORT}`);
+    app.listen(PORT, HOST, () => {
+        console.log(`Server running at http://${HOST}:${PORT}`);
     });
 }
 

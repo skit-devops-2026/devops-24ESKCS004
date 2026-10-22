@@ -31,3 +31,11 @@ jobs:
             https://devops-24eskcs004.onrender.com/ \
             --max-time 60 --retry 3 --retry-delay 5)
           echo "Root endpoint HTTP Status: $STATUS"
+
+      - name: Ping metrics endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            https://devops-24eskcs004.onrender.com/metrics \
+            --max-time 60 --retry 3 --retry-delay 5)
+          echo "Metrics endpoint HTTP Status: $STATUS"
+

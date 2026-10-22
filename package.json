@@ -4,12 +4,14 @@
   "description": "To-Do List and DevOps Practice - SKIT DevOps 2026",
   "main": "server.js",
   "scripts": {
+    "build": "echo 'Build successful'",
     "start": "node server.js",
     "test": "node test.js",
     "lint": "node -c js/*.js tests/*.test.js",
     "test:legacy": "node --test tests/*.test.js"
   },
   "dependencies": {
+    "cors": "^2.8.6",
     "express": "^4.19.2",
     "mongoose": "^8.4.0",
     "prom-client": "^15.1.3"
