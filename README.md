@@ -22,12 +22,11 @@
 ## Live Demo
 
 - **Live URL**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com)
+- **Live URL (Render)**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com)
+- **Live URL (GitHub Pages)**: [https://skit-devops-2026.github.io/devops-24ESKCS004/](https://skit-devops-2026.github.io/devops-24ESKCS004/)
 - **Health Endpoint (1/2)**: [https://devops-24eskcs004.onrender.com/health](https://devops-24eskcs004.onrender.com/health)
 - **Prometheus Metrics Endpoint (2/2)**: [https://devops-24eskcs004.onrender.com/metrics](https://devops-24eskcs004.onrender.com/metrics)
-- **Live URL (GitHub Pages)**: [https://skit-devops-2026.github.io/devops-24ESKCS004/](https://skit-devops-2026.github.io/devops-24ESKCS004/)
 - **Backend API (Render)**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com)
-- **Health Endpoint**: [https://devops-24eskcs004.onrender.com/health](https://devops-24eskcs004.onrender.com/health)
-- **Prometheus Metrics**: [https://devops-24eskcs004.onrender.com/metrics](https://devops-24eskcs004.onrender.com/metrics)
 
 ---
 
@@ -43,12 +42,12 @@
 ### Module 6 — Deployment & Monitoring
 - **Deployment Platform**: Render.com (Node.js API backend) + GitHub Pages (static frontend).
 - **Live URL**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com)
+- **Live URL (GitHub Pages)**: [https://skit-devops-2026.github.io/devops-24ESKCS004/](https://skit-devops-2026.github.io/devops-24ESKCS004/) — auto-deployed via `pages.yml` GitHub Actions workflow on every push to `main`.
 - **Health Endpoint (1/2)**: [https://devops-24eskcs004.onrender.com/health](https://devops-24eskcs004.onrender.com/health) — returns `{"status":"ok","message":"Server is running",...}`
 - **Prometheus Metrics Endpoint (2/2)**: [https://devops-24eskcs004.onrender.com/metrics](https://devops-24eskcs004.onrender.com/metrics) — Prometheus scrape target
-- **Live URL (GitHub Pages)**: [https://skit-devops-2026.github.io/devops-24ESKCS004/](https://skit-devops-2026.github.io/devops-24ESKCS004/) — auto-deployed via `pages.yml` GitHub Actions workflow on every push to `main`.
 - **Backend API URL (Render)**: [https://devops-24eskcs004.onrender.com](https://devops-24eskcs004.onrender.com) — Node.js + MongoDB deployed via `render.yaml` Blueprint.
 - **Render Blueprint**: `render.yaml` at repository root — Infrastructure-as-Code for auto-deploy on push to `main`.
-- **Prometheus Scrape Configuration**: Located in `monitoring/prometheus.yml`, scraping `/metrics` on port 5000.
+- **Prometheus Scrape Configuration**: Located in `monitoring/prometheus.yml` (and `prometheus.yml`), scraping `/metrics` on port 5000.
 - **Monitoring Dashboard**: Production Grafana dashboard export located in `monitoring/dashboard.json` tracking RPS, latency percentiles, CPU, RSS, and heap memory.
 - **Deployment Verification**: Visual verification screenshot saved in `docs/deployment.png`.
 
